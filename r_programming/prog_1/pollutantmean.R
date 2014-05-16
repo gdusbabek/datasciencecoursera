@@ -5,7 +5,7 @@
 # pollutant is a char vector of "sulfate" or "nitrate"
 # id is an int vector indicating which monitors
 # return mean of the pollutant across all monitors in the id vector
-pollutantmean <- function(directory, pollutant, id) {
+pollutantmean <- function(directory, pollutant, id = 1:332) {
   # read in all the files
   files = list.files(directory)
   max <- 1000000
@@ -14,18 +14,25 @@ pollutantmean <- function(directory, pollutant, id) {
   sum <- 0
   sumCount <- 0
   
-  pollutantValues = vector()
+  results <- vector()
+  
   for (f in list.files(directory)) {
     path = paste(directory, f, sep="/")
     # read the whole file.
     data <- read.csv(path)
+    
+    # pull in the column for the right ids.
+    data <- subset(data, select=c("ID", pollutant), ID %in% id)
+    
     # remove all the NA
     good <- complete.cases(data)
     data <- data[good,]
     
-    # pull in the column for the right ids.
-    data <- subset(data, select=c(pollutant), ID %in% id)
     sum <- sum + sum(data[[pollutant]])
+    for (x in data[[pollutant]]) {
+      results[length(results)+1] = x
+      #print(toString(c(f, x)))
+    }
     sumCount <- sumCount + length(data[[pollutant]])
     
     count <- count + 1
@@ -34,5 +41,7 @@ pollutantmean <- function(directory, pollutant, id) {
     }
   }
   
-  sum / sumCount
+  #print(sum / sumCount)
+  #print(mean(results))
+  mean(results)
 }
